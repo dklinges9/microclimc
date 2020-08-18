@@ -355,7 +355,7 @@ runNMR <- function(climdata, prec, lat, long, Usrhyt, Veghyt, Refhyt = 2, PAI = 
   if (snowmodel == 1) {
     snow <- as.data.frame(microut$sunsnow)
   } else snow <- 0
-  if (max(metout[,1]==0)) warning("ERROR: the model crashed - try a different error tolerance spacing in DEP")
+  if (max(!is.na(metout[,1]==0))) warning("ERROR: the model crashed - try a different error tolerance spacing in DEP")
   return(list(metout=metout,shadmet=shadmet,soiltemps=soil,soilmoist=soilmoist,snowtemp=snow,plant=plant))
 }
 #' Internal function for calculating lead absorbed radiation on vector
