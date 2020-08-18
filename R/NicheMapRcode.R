@@ -346,6 +346,137 @@ runNMR <- function(climdata, prec, lat, long, Usrhyt, Veghyt, Refhyt = 2, PAI = 
               SOLRhr=SOLRhr,RAINhr=RAINhr,ZENhr=ZENhr,IRDhr=IRDhr,REFLS=REFLS1,PCTWET=PCTWET1,
               soilinit=soilinit,hori=hori,TAI=TAI,soilprops=soilprops,moists=moists1,
               RAINFALL=RAINFALL1,tannulrun=deepsoil,PE=PE,KS=KS,BB=BB,BD=BD,DD=DD,L=L,LAI=LAI)
+  ## Error checking ############
+
+  errors <- 0
+  if (DEP[2] - DEP[1] > 3 | DEP[3] - DEP[2] > 3) {
+    message("warning, nodes might be too far apart near the surface, try a different spacing if the program is crashing \n")
+  }
+  if (DEP[2] - DEP[1] < 2) {
+    cat("warning, nodes might be too close near the surface, try a different spacing if the program is crashing \n")
+  }
+  if (is.numeric(loc[1])) {
+    if (loc[1] > 180 | loc[2] > 90) {
+      message("ERROR: Latitude or longitude (longlat) is out of bounds.\n        Please enter a correct value.",
+              "\n")
+      errors <- 1
+    }
+  }
+  if (RUF < 1e-04) {
+    message("ERROR: The roughness height (RUF) is too small ( < 0.0001).\n        Please enter a larger value.",
+            "\n")
+    errors <- 1
+  }
+  if (RUF > 2) {
+    message("ERROR: The roughness height (RUF) is too large ( > 2).\n        Please enter a smaller value.",
+            "\n")
+    errors <- 1
+  }
+  if (DEP[1] != 0) {
+    message("ERROR: First soil node (DEP[1]) must = 0 cm.\n        Please correct",
+            "\n")
+    errors <- 1
+  }
+  if (length(DEP) != 10) {
+    message("ERROR: You must enter 10 different soil depths.",
+            "\n")
+    errors <- 1
+  }
+  for (i in 1:9) {
+    if (DEP[i + 1] <= DEP[i]) {
+      message("ERROR: Soil depth (DEP array) is not in ascending size",
+              "\n")
+      errors <- 1
+    }
+  }
+  if (DEP[10] > 500) {
+    message("ERROR: Deepest soil depth (DEP array) is too large (<=500 cm)",
+            "\n")
+    errors <- 1
+  }
+  if (Thcond < 0) {
+    message("ERROR: Thermal variable conductivity (THCOND) is negative.\n        Please input a positive value.",
+            "\n")
+    errors <- 1
+  }
+  if (Density < 0) {
+    message("ERROR: Density variable (Density) is negative.\n        Please input a positive value.",
+            "\n")
+    errors <- 1
+  }
+  if (SpecHeat < 0) {
+    message("ERROR: Specific heat variable (SpecHeat) is negative.\n        Please input a positive value.",
+            "\n")
+    errors <- 1
+  }
+  if (min(BulkDensity) < 0) {
+    message("ERROR: Bulk density value (BulkDensity) is negative.\n        Please input a positive value.",
+            "\n")
+    errors <- 1
+  }
+  if (REFL < 0 | REFL > 1) {
+    message("ERROR: Soil reflectivity value (REFL) is out of bounds.\n        Please input a value between 0 and 1.",
+            "\n")
+    errors <- 1
+  }
+  if (slope < 0 | slope > 90) {
+    message("ERROR: Slope value (slope) is out of bounds.\n        Please input a value between 0 and 90.",
+            "\n")
+    errors <- 1
+  }
+  if (aspect < 0 | aspect > 365) {
+    message("ERROR: Aspect value (aspect) is out of bounds.\n        Please input a value between 0 and 365.",
+            "\n")
+    errors <- 1
+  }
+  if (max(hori) > 90 | min(hori) < 0) {
+    message("ERROR: At least one of your horizon angles (hori) is out of bounds.\n        Please input a value between 0 and 90",
+            "\n")
+    errors <- 1
+  }
+  if (length(hori) != 24) {
+    message("ERROR: You must enter 24 horizon angle values.",
+            "\n")
+    errors <- 1
+  }
+  if (SLE < 0.05 | SLE > 1) {
+    message("ERROR: Emissivity (SLE) is out of bounds.\n        Please enter a correct value (0.05 - 1.00).",
+            "\n")
+    errors <- 1
+  }
+  if (ERR < 0) {
+    message("ERROR: Error bound (ERR) is too small.\n        Please enter a correct value (> 0.00).",
+            "\n")
+    errors <- 1
+  }
+  if (Usrhyt < RUF) {
+    message("ERROR: Reference height (Usrhyt) smaller than roughness height (RUF).\n        Please use a larger height above the surface.",
+            "\n")
+    errors <- 1
+  }
+  if (Usrhyt < 0.005 | Usrhyt > Refhyt) {
+    message("ERROR: Reference height (Usrhyt) is out of bounds.\n        Please enter a correct value (0.005 - Refhyt).",
+            "\n")
+    errors <- 1
+  }
+  if (max(TIMAXS) > 24 | min(TIMAXS) < 0) {
+    message("ERROR: At least one of your times of weather maxima (TIMAXS) is out of bounds.\n        Please input a value between 0 and 24",
+            "\n")
+    errors <- 1
+  }
+  if (max(TIMINS) > 24 | min(TIMINS) < 0) {
+    message("ERROR: At least one of your times of weather minima (TIMINS) is out of bounds.\n        Please input a value between 0 and 24",
+            "\n")
+    errors <- 1
+  }
+  if (soiltype < 0 | soiltype > 11) {
+    message("ERROR: the soil type must range between 1 and 11.\n      Please correct.",
+            "\n")
+    errors <- 1
+  }
+
+  ## Run model ##########
+
   microut<-microclimate(micro)
   metout<-as.data.frame(microut$metout)
   shadmet<-as.data.frame(microut$shadmet)
