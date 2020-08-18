@@ -424,7 +424,7 @@ runNMR <- function(climdata, prec, lat, long, Usrhyt, Veghyt, Refhyt = 2, PAI = 
             "\n")
     errors <- 1
   }
-  if (aspect < 0 | aspect > 365) {
+  if (ASPECT < 0 | ASPECT > 365) {
     message("ERROR: Aspect value (aspect) is out of bounds.\n        Please input a value between 0 and 365.",
             "\n")
     errors <- 1
