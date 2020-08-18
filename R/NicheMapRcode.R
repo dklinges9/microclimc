@@ -348,6 +348,7 @@ runNMR <- function(climdata, prec, lat, long, Usrhyt, Veghyt, Refhyt = 2, PAI = 
               RAINFALL=RAINFALL1,tannulrun=deepsoil,PE=PE,KS=KS,BB=BB,BD=BD,DD=DD,L=L,LAI=LAI)
   microut<-microclimate(micro)
   metout<-as.data.frame(microut$metout)
+  shadmet<-as.data.frame(microut$shadmet)
   soil<-as.data.frame(microut$soil)
   soilmoist<-as.data.frame(microut$soilmoist)
   plant<-as.data.frame(microut$plant)
@@ -355,7 +356,7 @@ runNMR <- function(climdata, prec, lat, long, Usrhyt, Veghyt, Refhyt = 2, PAI = 
     snow <- as.data.frame(microut$sunsnow)
   } else snow <- 0
   if (max(metout[,1]==0)) warning("ERROR: the model crashed - try a different error tolerance spacing in DEP")
-  return(list(metout=metout,soiltemps=soil,soilmoist=soilmoist,snowtemp=snow,plant=plant))
+  return(list(metout=metout,shadmet=shadmet,soiltemps=soil,soilmoist=soilmoist,snowtemp=snow,plant=plant))
 }
 #' Internal function for calculating lead absorbed radiation on vector
 .leafabs2 <-function(Rsw, tme, tair, tground, lat, long, PAIt, PAIu, pLAI, x, refls, refw, refg, vegem, skyem, dp,
@@ -477,7 +478,7 @@ tleafS <- function(tair, tground, relhum, pk, theta, gtt, gt0, gha, gv, Rabs, ve
   if (class(snow) == "data.frame") {
     snowtemp<-snow$SN1
   } else snowtemp<-rep(0,length(L))
-  metout<-nmrout$metout
+  metout<-nmrout$shadmet
   snowdep<-metout$SNOWDEP
   # (1) Unpack variables
   tair<-climdata$temp
@@ -736,7 +737,7 @@ runmodelS <- function(climdata, vegp, soilp, nmrout, reqhgt,  lat, long, metopen
   plant<-nmrout$plant
   lambda <- (-42.575*tair+44994)
   L<-(lambda*plant$TRANS)/(3600*18.01528)
-  metout<-nmrout$metout
+  metout<-nmrout$shadmet
   snowdep<-metout$SNOWDEP
   selsnow<-which(snowdep > 0)
   # (2b) Ground heat flux
@@ -846,7 +847,7 @@ runmodelS <- function(climdata, vegp, soilp, nmrout, reqhgt,  lat, long, metopen
   if (class(snow) == "data.frame") {
     snowtemp<-nmrout$SN1
   } else snowtemp<-rep(0,length(L))
-  mo<-nmrout$metout
+  mo<-nmrout$shadmet
   snowdep<-mo$SNOWDEP
   if (max(snowdep) > 0) {
     mos <- .runmodelsnow(climdata,vegp,soilp,nmrout,reqhgt,lat,long,metopen,windhgt)
