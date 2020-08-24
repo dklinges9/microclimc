@@ -849,7 +849,7 @@ runmodelS <- function(climdata, vegp, soilp, nmrout, reqhgt,  lat, long, metopen
   } else snowtemp<-rep(0,length(L))
   mo<-nmrout$metout
   snowdep<-mo$SNOWDEP
-  if (max(snowdep) > 0) {
+  if (max(complete.cases(snowdep)) > 0) {
     mos <- .runmodelsnow(climdata,vegp,soilp,nmrout,reqhgt,lat,long,metopen,windhgt)
     sel<-which(snowdep>0)
     metout$Tloc[sel]<-mos$Tloc[sel]
