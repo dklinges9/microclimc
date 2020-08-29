@@ -346,148 +346,15 @@ runNMR <- function(climdata, prec, lat, long, Usrhyt, Veghyt, Refhyt = 2, PAI = 
               SOLRhr=SOLRhr,RAINhr=RAINhr,ZENhr=ZENhr,IRDhr=IRDhr,REFLS=REFLS1,PCTWET=PCTWET1,
               soilinit=soilinit,hori=hori,TAI=TAI,soilprops=soilprops,moists=moists1,
               RAINFALL=RAINFALL1,tannulrun=deepsoil,PE=PE,KS=KS,BB=BB,BD=BD,DD=DD,L=L,LAI=LAI)
-  ## Error checking ############
-
-  errors <- 0
-  if (DEP[2] - DEP[1] > 3 | DEP[3] - DEP[2] > 3) {
-    message("warning, nodes might be too far apart near the surface, try a different spacing if the program is crashing \n")
-  }
-  if (DEP[2] - DEP[1] < 2) {
-    cat("warning, nodes might be too close near the surface, try a different spacing if the program is crashing \n")
-  }
-  if (is.numeric(loc[1])) {
-    if (loc[1] > 180 | loc[2] > 90) {
-      message("ERROR: Latitude or longitude (longlat) is out of bounds.\n        Please enter a correct value.",
-              "\n")
-      errors <- 1
-    }
-  }
-  if (RUF < 1e-04) {
-    message("ERROR: The roughness height (RUF) is too small ( < 0.0001).\n        Please enter a larger value.",
-            "\n")
-    errors <- 1
-  }
-  if (RUF > 2) {
-    message("ERROR: The roughness height (RUF) is too large ( > 2).\n        Please enter a smaller value.",
-            "\n")
-    errors <- 1
-  }
-  if (DEP[1] != 0) {
-    message("ERROR: First soil node (DEP[1]) must = 0 cm.\n        Please correct",
-            "\n")
-    errors <- 1
-  }
-  if (length(DEP) != 10) {
-    message("ERROR: You must enter 10 different soil depths.",
-            "\n")
-    errors <- 1
-  }
-  for (i in 1:9) {
-    if (DEP[i + 1] <= DEP[i]) {
-      message("ERROR: Soil depth (DEP array) is not in ascending size",
-              "\n")
-      errors <- 1
-    }
-  }
-  if (DEP[10] > 500) {
-    message("ERROR: Deepest soil depth (DEP array) is too large (<=500 cm)",
-            "\n")
-    errors <- 1
-  }
-  if (Thcond < 0) {
-    message("ERROR: Thermal variable conductivity (THCOND) is negative.\n        Please input a positive value.",
-            "\n")
-    errors <- 1
-  }
-  if (Density < 0) {
-    message("ERROR: Density variable (Density) is negative.\n        Please input a positive value.",
-            "\n")
-    errors <- 1
-  }
-  if (SpecHeat < 0) {
-    message("ERROR: Specific heat variable (SpecHeat) is negative.\n        Please input a positive value.",
-            "\n")
-    errors <- 1
-  }
-  if (min(BulkDensity) < 0) {
-    message("ERROR: Bulk density value (BulkDensity) is negative.\n        Please input a positive value.",
-            "\n")
-    errors <- 1
-  }
-  if (REFL < 0 | REFL > 1) {
-    message("ERROR: Soil reflectivity value (REFL) is out of bounds.\n        Please input a value between 0 and 1.",
-            "\n")
-    errors <- 1
-  }
-  if (slope < 0 | slope > 90) {
-    message("ERROR: Slope value (slope) is out of bounds.\n        Please input a value between 0 and 90.",
-            "\n")
-    errors <- 1
-  }
-  if (ASPECT < 0 | ASPECT > 365) {
-    message("ERROR: Aspect value (aspect) is out of bounds.\n        Please input a value between 0 and 365.",
-            "\n")
-    errors <- 1
-  }
-  if (max(hori) > 90 | min(hori) < 0) {
-    message("ERROR: At least one of your horizon angles (hori) is out of bounds.\n        Please input a value between 0 and 90",
-            "\n")
-    errors <- 1
-  }
-  if (length(hori) != 24) {
-    message("ERROR: You must enter 24 horizon angle values.",
-            "\n")
-    errors <- 1
-  }
-  if (SLE < 0.05 | SLE > 1) {
-    message("ERROR: Emissivity (SLE) is out of bounds.\n        Please enter a correct value (0.05 - 1.00).",
-            "\n")
-    errors <- 1
-  }
-  if (ERR < 0) {
-    message("ERROR: Error bound (ERR) is too small.\n        Please enter a correct value (> 0.00).",
-            "\n")
-    errors <- 1
-  }
-  if (Usrhyt < RUF) {
-    message("ERROR: Reference height (Usrhyt) smaller than roughness height (RUF).\n        Please use a larger height above the surface.",
-            "\n")
-    errors <- 1
-  }
-  if (Usrhyt < 0.005 | Usrhyt > Refhyt) {
-    message("ERROR: Reference height (Usrhyt) is out of bounds.\n        Please enter a correct value (0.005 - Refhyt).",
-            "\n")
-    errors <- 1
-  }
-  if (max(TIMAXS) > 24 | min(TIMAXS) < 0) {
-    message("ERROR: At least one of your times of weather maxima (TIMAXS) is out of bounds.\n        Please input a value between 0 and 24",
-            "\n")
-    errors <- 1
-  }
-  if (max(TIMINS) > 24 | min(TIMINS) < 0) {
-    message("ERROR: At least one of your times of weather minima (TIMINS) is out of bounds.\n        Please input a value between 0 and 24",
-            "\n")
-    errors <- 1
-  }
-  if (soiltype < 0 | soiltype > 11) {
-    message("ERROR: the soil type must range between 1 and 11.\n      Please correct.",
-            "\n")
-    errors <- 1
-  }
-
-  ## Run model ##########
-
   microut<-microclimate(micro)
   metout<-as.data.frame(microut$metout)
-  shadmet<-as.data.frame(microut$shadmet)
   soil<-as.data.frame(microut$soil)
   soilmoist<-as.data.frame(microut$soilmoist)
   plant<-as.data.frame(microut$plant)
   if (snowmodel == 1) {
     snow <- as.data.frame(microut$sunsnow)
   } else snow <- 0
-  if (max(!is.na(metout[,1]==0))) warning("ERROR: the model crashed - try a different error tolerance spacing in DEP")
-  return(list(metout=metout,shadmet=shadmet,soiltemps=soil,soilmoist=soilmoist,snowtemp=snow,plant=plant))
+  return(list(metout=metout,soiltemps=soil,soilmoist=soilmoist,snowtemp=snow,plant=plant))
 }
 #' Internal function for calculating lead absorbed radiation on vector
 .leafabs2 <-function(Rsw, tme, tair, tground, lat, long, PAIt, PAIu, pLAI, x, refls, refw, refg, vegem, skyem, dp,
@@ -609,7 +476,7 @@ tleafS <- function(tair, tground, relhum, pk, theta, gtt, gt0, gha, gv, Rabs, ve
   if (class(snow) == "data.frame") {
     snowtemp<-snow$SN1
   } else snowtemp<-rep(0,length(L))
-  metout<-nmrout$shadmet
+  metout<-nmrout$metout
   snowdep<-metout$SNOWDEP
   # (1) Unpack variables
   tair<-climdata$temp
@@ -690,7 +557,7 @@ tleafS <- function(tair, tground, relhum, pk, theta, gtt, gt0, gha, gv, Rabs, ve
     } else tleaf2<-snowtemp[sbs]
     ws2<-rep(0,length(sbs))
   }
-  if (reqhgt > hgt) {
+  if (reqhgt >= hgt) {
     # Above snow
     if (length(sas)>0) {
       xx<-(H[sas]/(0.4*ph[sas]*cp[sas]*uf[sas]))
@@ -853,14 +720,16 @@ runmodelS <- function(climdata, vegp, soilp, nmrout, reqhgt,  lat, long, metopen
       if (length(sel) > 1) PAIu1<-apply(PAIu1,2,sum)
       PAIu2<-vegp$PAI[sel2,]
       if (length(sel2) > 1) PAIu2<-apply(PAIu2,2,sum)
-      PAIu<-PAIu1+(wgt1/(wgt1+wgt2))*(PAIu2-PAIu1)
+      if (length(wgt2) > 1) {
+        PAIu<-PAIu1+(wgt1/(wgt1+wgt2))*(PAIu2-PAIu1)
+      } else PAIu<-PAIu1
     } else {
       zu<-z[length(z)]
       wgt<-(hgt-reqhgt)/(hgt-zu)
       PAIu<-wgt*vegp$PAI[length(z),]
     }
     dif<-abs(z-reqhgt)
-    sel<-which(dif==min(dif))
+    sel<-which(dif==min(dif))[1]
     leafdens<-vegp$PAI[sel,]/(z[2]-z[1])
   } else PAIu<-rep(0,length(PAIt))
   # (2) Estimate Sensible Heat flux
@@ -868,7 +737,7 @@ runmodelS <- function(climdata, vegp, soilp, nmrout, reqhgt,  lat, long, metopen
   plant<-nmrout$plant
   lambda <- (-42.575*tair+44994)
   L<-(lambda*plant$TRANS)/(3600*18.01528)
-  metout<-nmrout$shadmet
+  metout<-nmrout$metout
   snowdep<-metout$SNOWDEP
   selsnow<-which(snowdep > 0)
   # (2b) Ground heat flux
@@ -917,7 +786,7 @@ runmodelS <- function(climdata, vegp, soilp, nmrout, reqhgt,  lat, long, metopen
   uz<-.windprofile(u2,hgt+2,vegp$hgtg,a,hgt,PAIt,dba$psi_m)
   uf<-(0.4*u2)/(log((hgt+2-d)/zm)+dba$psi_m)
   uf[uf<0.1]<-0.1
-  if (reqhgt > hgt) {
+  if (reqhgt >= hgt) {
     xx<-(H/(0.4*ph*cp*uf))
     T0<-tair+xx*(log((hgt+2-d)/(0.2*zm))+dba$psi_h)
     tmx<-tair+20
@@ -978,9 +847,9 @@ runmodelS <- function(climdata, vegp, soilp, nmrout, reqhgt,  lat, long, metopen
   if (class(snow) == "data.frame") {
     snowtemp<-nmrout$SN1
   } else snowtemp<-rep(0,length(L))
-  mo<-nmrout$shadmet
+  mo<-nmrout$metout
   snowdep<-mo$SNOWDEP
-  if (max(snowdep) > 0) {
+  if (max(complete.cases(snowdep)) > 0) {
     mos <- .runmodelsnow(climdata,vegp,soilp,nmrout,reqhgt,lat,long,metopen,windhgt)
     sel<-which(snowdep>0)
     metout$Tloc[sel]<-mos$Tloc[sel]
@@ -1140,7 +1009,7 @@ runwithNMR <- function(climdata, prec, vegp, soilp, reqhgt, lat, long, altt = 0,
   BB = rep(4.5, 19)
   BD = rep(1.3, 19)
   DD = rep(2.65, 19)
-  nmrout<-runNMR(climdata,prec,lat,long,2,hgt,2,PAIt,vegp$x,pLAI,
+  nmrout<-runNMR(climdata,prec,lat,long,1.95,hgt,2,PAIt,vegp$x,pLAI,
                  vegp$clump,vegp$refg,LREFL,0.95,DEP,altt,slope,aspect,
                  ERR,soiltype,PE,KS,BB,BD,DD,cap,hori,maxpool,rainmult,SoilMoist_Init)
   if (reqhgt < 0) {
