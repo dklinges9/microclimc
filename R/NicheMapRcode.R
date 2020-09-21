@@ -96,6 +96,7 @@ runNMR <- function(climdata, prec, lat, long, Usrhyt, Veghyt, Refhyt = 2, PAI = 
                    ERR = 1.5, soiltype = "Loam", PE=rep(1.1,19), KS=rep(0.0037,19), BB=rep(4.5,19),
                    BD=rep(1.3,19), DD=rep(2.65,19), cap = 1, hori = rep(0,36), maxpool = 1000,
                    rainmult = 1, SoilMoist_Init = c(0.1,0.12,0.15,0.2,0.25,0.3,0.3,0.3,0.3,0.3)) {
+  load("data/soilparams.rda")
   if (Veghyt > 2) Veghyt<-2
   loc<-c(long,lat)
   tmehr<-as.POSIXlt(climdata$obs_time,tz="UTC")
@@ -172,7 +173,7 @@ runNMR <- function(climdata, prec, lat, long, Usrhyt, Veghyt, Refhyt = 2, PAI = 
     PE<-rep(microclimc::soilparams$psi_e[sel],19)
     BB<-rep(microclimc::soilparams$b[sel],19)
     BD<-rep(microclimc::soilparams$rho[sel],19)
-    KS<-rep(CampNormTbl9_1$Ks[sel],19)
+    KS<-rep(soilparams$Ksat[sel],19)
   }
   BulkDensity<-BD[seq(1,19,2)]
   VIEWF<-1-sum(sin(as.data.frame(hori)*pi/180))/length(hori)
